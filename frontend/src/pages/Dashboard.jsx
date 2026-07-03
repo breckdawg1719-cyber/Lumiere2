@@ -80,11 +80,11 @@ export default function Dashboard() {
       ? Math.min(100, ((stats.total_spent + stats.total_pending) / stats.total_budget) * 100)
       : 0;
 
-  const pieData = stats.by_category
+  const pieData = (stats.by_category || [])
     .filter((c) => c.spent + c.pending > 0)
     .map((c) => ({ name: c.name, value: c.spent + c.pending, color: c.color }));
 
-  const barData = stats.by_category
+  const barData = (stats.by_category || [])
     .filter((c) => c.planned > 0 || c.spent > 0 || c.pending > 0)
     .slice(0, 8)
     .map((c) => ({
