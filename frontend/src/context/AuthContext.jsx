@@ -1,30 +1,39 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api } from "@/lib/api";
+import { api, setAuthToken, clearAuthToken } from "@/lib/api";
 
 const AuthContext = createContext(null);
 
+const TOKEN_KEY = "lumiere_token";
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUserState] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const setUser = useCallback((userData, token) => {
+    if (userData && token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      setAuthToken(token);
+    }
+    setUserState(userData);
+  }, []);
+
   const fetchMe = useCallback(async () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return null;
+    setAuthToken(token);
     try {
       const { data } = await api.get("/auth/me");
-      setUser(data);
+      setUserState(data);
       return data;
     } catch (e) {
-      setUser(null);
+      localStorage.removeItem(TOKEN_KEY);
+      clearAuthToken();
+      setUserState(null);
       return null;
     }
   }, []);
 
   useEffect(() => {
-    // CRITICAL: If returning from OAuth callback, skip the /me check.
-    // AuthCallback will exchange the session_id and establish the session first.
-    if (typeof window !== "undefined" && window.location.hash?.includes("session_id=")) {
-      setLoading(false);
-      return;
-    }
     (async () => {
       await fetchMe();
       setLoading(false);
@@ -37,7 +46,9 @@ export function AuthProvider({ children }) {
     } catch (e) {
       // ignore
     }
-    setUser(null);
+    localStorage.removeItem(TOKEN_KEY);
+    clearAuthToken();
+    setUserState(null);
   };
 
   return (

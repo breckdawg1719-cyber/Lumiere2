@@ -3,9 +3,28 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
 
+// Store token in memory (not localStorage for security)
+let authToken = null;
+
+export function setAuthToken(token) {
+  authToken = token;
+}
+
+export function clearAuthToken() {
+  authToken = null;
+}
+
 export const api = axios.create({
   baseURL: API_BASE,
-  withCredentials: true,
+  withCredentials: false,
+});
+
+// Attach token to every request
+api.interceptors.request.use((config) => {
+  if (authToken) {
+    config.headers["Authorization"] = `Bearer ${authToken}`;
+  }
+  return config;
 });
 
 export function formatApiError(detail) {

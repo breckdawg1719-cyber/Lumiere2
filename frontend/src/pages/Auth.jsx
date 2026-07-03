@@ -27,9 +27,9 @@ export default function Auth({ mode = "login" }) {
       const path = isSignup ? "/auth/register" : "/auth/login";
       const body = isSignup ? { email, password, name } : { email, password };
       const { data } = await api.post(path, body);
-      setUser(data);
+      // data contains user info + token
+      setUser(data, data.token || data.session_token);
       toast.success(isSignup ? "Welcome aboard" : "Welcome back");
-      // New signups go through onboarding wizard first.
       if (isSignup || data?.onboarded === false) {
         navigate("/onboarding", { replace: true });
       } else {
@@ -44,13 +44,12 @@ export default function Auth({ mode = "login" }) {
     }
   };
 
-  // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const { data } = await api.post("/auth/google/id-token", {
         id_token: credentialResponse.credential,
       });
-      setUser(data);
+      setUser(data, data.token || data.session_token);
       toast.success("Signed in with Google");
       if (data?.onboarded === false) {
         navigate("/onboarding", { replace: true });
@@ -133,9 +132,7 @@ export default function Auth({ mode = "login" }) {
 
           <div className="my-6 flex items-center gap-3">
             <div className="flex-1 h-px bg-[#EAE5DF]" />
-            <span className="text-xs uppercase tracking-[0.22em] text-[#9c958a]">
-              or
-            </span>
+            <span className="text-xs uppercase tracking-[0.22em] text-[#9c958a]">or</span>
             <div className="flex-1 h-px bg-[#EAE5DF]" />
           </div>
 
@@ -212,22 +209,14 @@ export default function Auth({ mode = "login" }) {
             {isSignup ? (
               <>
                 Already booked?{" "}
-                <Link
-                  to="/login"
-                  data-testid="switch-to-login"
-                  className="text-[#8a6e47] underline-offset-4 hover:underline"
-                >
+                <Link to="/login" data-testid="switch-to-login" className="text-[#8a6e47] underline-offset-4 hover:underline">
                   Sign in
                 </Link>
               </>
             ) : (
               <>
                 New here?{" "}
-                <Link
-                  to="/signup"
-                  data-testid="switch-to-signup"
-                  className="text-[#8a6e47] underline-offset-4 hover:underline"
-                >
+                <Link to="/signup" data-testid="switch-to-signup" className="text-[#8a6e47] underline-offset-4 hover:underline">
                   Create an account
                 </Link>
               </>

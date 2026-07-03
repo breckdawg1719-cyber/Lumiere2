@@ -244,6 +244,7 @@ class UserOut(BaseModel):
     created_at: datetime
     onboarded: bool = False
     email_verified: bool = True   # Google users always verified
+    token: Optional[str] = None   # Session token returned to frontend
 
 
 class OnboardIn(BaseModel):
@@ -435,7 +436,7 @@ async def register(payload: RegisterIn, response: Response, request: Request):
     return UserOut(
         user_id=user_id, email=email, name=payload.name.strip(),
         picture=None, created_at=datetime.fromisoformat(doc["created_at"]),
-        onboarded=False, email_verified=True,
+        onboarded=False, email_verified=True, token=token,
     )
 
 
@@ -476,7 +477,7 @@ async def verify_email(payload: VerifyEmailIn, response: Response, request: Requ
 
     return UserOut(
         user_id=user["user_id"], email=user["email"], name=user["name"],
-        picture=user.get("picture"), created_at=created_at, onboarded=False, email_verified=True,
+        picture=user.get("picture"), created_at=created_at, onboarded=False, email_verified=True, token=token,
     )
 
 
@@ -533,7 +534,7 @@ async def login(payload: LoginIn, response: Response, request: Request):
     return UserOut(
         user_id=user["user_id"], email=user["email"], name=user["name"],
         picture=user.get("picture"), created_at=created_at, onboarded=onboarded,
-        email_verified=user.get("email_verified", True),
+        email_verified=user.get("email_verified", True), token=token,
     )
 
 
@@ -586,7 +587,7 @@ async def google_session(payload: EmergentSessionIn, response: Response, request
     )
     set_session_cookie(response, emergent_token)
     created_at = datetime.fromisoformat(created_at_iso) if isinstance(created_at_iso, str) else created_at_iso
-    return UserOut(user_id=user_id, email=email, name=name, picture=picture, created_at=created_at, email_verified=True)
+    return UserOut(user_id=user_id, email=email, name=name, picture=picture, created_at=created_at, email_verified=True, token=emergent_token)
 
 
 # ------------------------------------------------------------------
@@ -635,7 +636,7 @@ async def google_id_token_login(payload: GoogleIdTokenIn, response: Response, re
     refreshed = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
     onboarded = await is_onboarded(refreshed or {"user_id": user_id})
     return UserOut(user_id=user_id, email=email, name=name, picture=picture,
-                   created_at=created_at, onboarded=onboarded, email_verified=True)
+                   created_at=created_at, onboarded=onboarded, email_verified=True, token=token)
 
 
 @api.get("/auth/me", response_model=UserOut)
@@ -1222,7 +1223,13 @@ app.include_router(api)
 # CORS — locked to your frontend URL only
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL] + (["http://localhost:3000"] if not IS_PROD else []),
+    allow_origins=[
+        FRONTEND_URL,
+        "http://localhost:3000",
+        "https://lumiere2-five.vercel.app",
+        "https://planwithlumiere.com",
+        "https://www.planwithlumiere.com",
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Admin-Key"],
