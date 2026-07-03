@@ -383,7 +383,7 @@ async def security_headers(request: Request, call_next):
     if IS_PROD:
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     if "server" in response.headers:
-    del response.headers["server"]
+        del response.headers["server"]
     return response
 
 
