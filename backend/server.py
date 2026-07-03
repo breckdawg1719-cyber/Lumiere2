@@ -382,7 +382,8 @@ async def security_headers(request: Request, call_next):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     if IS_PROD:
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-    response.headers.pop("Server", None)   # Don't leak server fingerprint
+    if "server" in response.headers:
+    del response.headers["server"]
     return response
 
 
