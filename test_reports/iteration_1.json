@@ -1,0 +1,31 @@
+{
+  "summary": "End-to-end testing of Wedding Budget Tracker (first iteration). Backend: 13/13 pytest tests passed covering auth (register/login/me/logout, duplicate email, wrong password), profile auto-create + 8 default category seeding, profile update (EUR/budget/partner names/venue), full CRUD on categories/expenses/guests/vendors, category-delete unlinking of expenses, stats aggregation (totals, by_category planned/spent/pending, RSVP counts incl. plus_ones and estimated_attending), and multi-tenant isolation (user B cannot list/update/delete user A categories). Frontend (Playwright on public URL): landing CTAs, signup -> dashboard, dashboard stat cards + chart-pie + chart-bar + guests-overview, settings save (currency EUR + 50000 budget) reflected on dashboard as '€50,000', categories add/edit/delete, expenses add + search + toggle-status + filter, guests add with RSVP=attending + plus_one + filter, vendors add with status=booked, sidebar navigation across all 6 tabs, logout via user-menu + menu-logout (then /dashboard correctly redirects to /login), wrong-password login shows auth-error 'Invalid email or password' + toast, then correct-password login succeeds.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "All authenticated pages", "issues": ["CRA webpack-dev-server overlay sporadically shows 'ResizeObserver loop completed with undelivered notifications' (benign recharts warning) which is visually intrusive in the preview environment. Suggest swallowing this specific error in window.onerror or disabling the overlay for this warning to avoid a fullscreen red error sheet."]},
+      {"screen": "Top-right toast vs user menu", "issues": ["Sonner toast renders top-right and visually covers the user-menu avatar/trigger for ~4-5s. Functionally clickable when toast is dismissed, but consider repositioning toast (top-center) or shortening duration so the avatar/profile menu is not occluded right after actions like 'Vendor added'."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Optional polish) Suppress 'ResizeObserver loop' runtime error so CRA's dev overlay does not block the UI in preview deployments.",
+    "(Optional polish) Move sonner Toaster position or reduce duration so it doesn't overlap the user-menu-trigger in the top-right."
+  ],
+  "critical_code_review_comments": [
+    "server.py: WeddingProfileIn uses Optional[...] = None and update strips None values - update_profile cannot clear a field back to empty string by sending null. Acceptable for current UX but worth noting.",
+    "server.py: PUT /api/categories|expenses|guests|vendors uses full-object payloads (CategoryIn/ExpenseIn/...) for updates, so partial updates require client to resend all fields. Frontend currently does this correctly; consider a PATCH endpoint in the future.",
+    "server.py: get_current_user accepts Bearer header as fallback - good for tests; ensure cookie remains the canonical path in production.",
+    "server.py is ~690 lines; still readable but approaching the 700-line threshold. Future growth should split into routers (auth, profile, items, stats)."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "100% (13/13)", "frontend": "100% of tested flows"},
+  "test_credentials": "Dynamic per-run users (ui_<ts>@example.com / secret123). Stable seed available in /app/memory/test_credentials.md: couple@example.com / secret123 (testing agent creates fresh users so cleanup is not required).",
+  "seed_data_creation": "No seeded admin needed. Each test class registers a fresh user; backend auto-seeds 8 default categories on first /api/profile call.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest entrypoint: pytest /app/backend/tests/backend_test.py -v. Frontend: dashboard currency symbol changes after Settings save. When clicking user-menu-trigger immediately after an action that produced a toast, wait ~5s or remove sonner toast nodes via JS first. CRA overlay (ResizeObserver) can intercept clicks - remove '#webpack-dev-server-client-overlay' via page.evaluate if encountered. Google OAuth (/api/auth/google/session) NOT tested end-to-end (requires real Emergent session); endpoint code path validates 401 on bad session id (not explicitly tested).",
+  "rca of the issue": "No functional bugs. Two minor UX/preview-only annoyances: (1) recharts triggers a benign ResizeObserver warning that CRA dev overlay surfaces as a fullscreen error; suggest swallowing the warning. (2) Sonner toast top-right overlaps user-menu-trigger; consider repositioning or reducing duration."
+}

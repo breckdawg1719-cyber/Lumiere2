@@ -1,0 +1,96 @@
+{
+  "theme": "light",
+  "archetype": "3 (Pastel & Soft) mixed with 5 (Luxury) - Elegant/Romantic",
+  "mood": "Elegant, Romantic, High-End Editorial, Calming, Stress-free",
+  "typography": {
+    "heading_font": "Playfair Display",
+    "body_font": "Outfit",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-serif tracking-tight text-slate-900",
+      "h2": "text-2xl sm:text-3xl font-serif tracking-tight text-slate-800",
+      "h3": "text-xl font-sans font-medium text-slate-800",
+      "body": "text-base font-sans text-slate-600 leading-relaxed",
+      "small_label": "text-xs font-sans uppercase tracking-[0.2em] text-slate-500"
+    },
+    "instructions": "Use Playfair Display for all major headings to establish an elegant, editorial wedding feel. Use Outfit for data-heavy sections, UI elements, and body text to ensure modern clarity."
+  },
+  "colors": {
+    "background": "#FAFAFA",
+    "surface": "#FFFFFF",
+    "primary": "#C5A880",
+    "primary_hover": "#B0936A",
+    "secondary": "#E2C2B3",
+    "text_primary": "#2C2C2C",
+    "text_secondary": "#76726B",
+    "border": "#EAE5DF",
+    "success": "#9CB4A6",
+    "warning": "#E8CBA5",
+    "danger": "#D48A8A",
+    "chart_palette": ["#C5A880", "#E2C2B3", "#9CB4A6", "#E8CBA5", "#D48A8A", "#B6C4B6"]
+  },
+  "layout_spacing": {
+    "philosophy": "Generous Spacing Philosophy. Lots of breathability to make the UI feel expensive and uncluttered.",
+    "container": "max-w-7xl mx-auto px-6 lg:px-8",
+    "card": "p-6 lg:p-8 rounded-2xl bg-white border border-[#EAE5DF] shadow-[0_4px_24px_rgba(0,0,0,0.02)]",
+    "grid_dashboard": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "bento_styles": "Use optical alignment. Add generous padding inside cards. Avoid dense cramming of information."
+  },
+  "components": {
+    "auth": {
+      "layout": "Split screen layout: Left side elegant romantic image covering full height, right side pure white form container.",
+      "style": "Minimalist inputs, soft border, Playfair Display heading 'Welcome to Your Journey'. Google login button with soft shadow."
+    },
+    "dashboard_cards": {
+      "style": "Soft surface. 'Crystal' or 'Tactile' variants. 1px delicate inner stroke 'border-[#EAE5DF]'. Avoid heavy shadows.",
+      "metrics": "Large Playfair Display numbers for budget totals. Small crisp overlines for labels."
+    },
+    "buttons": {
+      "primary": "bg-[#C5A880] text-white hover:bg-[#B0936A] rounded-full px-6 py-2.5 transition-all duration-300 shadow-sm",
+      "secondary": "bg-transparent border border-[#C5A880] text-[#C5A880] hover:bg-[#C5A880]/5 rounded-full px-6 py-2.5 transition-all duration-300"
+    },
+    "charts": {
+      "style": "Recharts with soft curves (type='monotone'). Use chart_palette. No harsh grid lines, subtle dotted axes if necessary."
+    },
+    "forms": {
+      "inputs": "Shadcn inputs customized: rounded-lg border-[#EAE5DF] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/20 bg-white shadow-sm h-12"
+    },
+    "navigation": {
+      "style": "Left sidebar or top fixed header with glassmorphism (bg-white/80 backdrop-blur-xl border-b border-[#EAE5DF]).",
+      "active_state": "Text-[#C5A880] font-medium, subtle dot or line indicator."
+    }
+  },
+  "motion_interactions": {
+    "hover": "Subtle lifts (-translate-y-0.5) and soft shadow expansions. duration-300 ease-out.",
+    "page_transition": "Fade in with slight upward motion (framer-motion initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{duration:0.6}}).",
+    "list_stagger": "Stagger guest lists or expense items on load to feel graceful."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Use strokeWidth={1.5} for a delicate, refined look matching the elegant theme."
+  },
+  "media": {
+    "auth_background": {
+      "url": "https://images.unsplash.com/photo-1674758445398-c2989470fa8a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwbWluaW1hbGlzdCUyMGZsb3JhbCUyMHdlZGRpbmd8ZW58MHx8fHwxNzgyNTI5NTE2fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Elegant minimalist white floral arrangement, perfect for auth split-screen background."
+    },
+    "empty_state_illustration": {
+      "url": "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwcmluZ3MlMjBlZGl0b3JpYWx8ZW58MHx8fHwxNzgyNTI5NTE3fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Editorial gold wedding rings. Can be used in empty states or onboarding."
+    },
+    "profile_hero_placeholder": {
+      "url": "https://images.unsplash.com/photo-1615966650071-855b15f29ad1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBzdW5zZXQlMjBlbGVnYW50fGVufDB8fHx8MTc4MjUyOTUxNnww&ixlib=rb-4.1.0&q=85",
+      "description": "Elegant silhouette of a couple at sunset, suitable for user profile headers or welcome banners."
+    }
+  },
+  "testing_rules": "All interactive and key informational elements MUST include `data-testid` attribute (e.g., data-testid='login-submit-button').",
+  "instructions_to_main_agent": [
+    "Install Google Fonts: 'Playfair Display' and 'Outfit' and configure them in tailwind.config.js.",
+    "Do NOT use generic AI purple gradients.",
+    "Implement the UI with plenty of negative space.",
+    "Ensure all auth features (JWT + Google) are present.",
+    "Ensure currency logic supports multi-currency.",
+    "Categories and sub-budgets should be easily nested visually.",
+    "Guest list tracking should have clear visual states (RSVP Pending/Attending) using the success/warning color palette.",
+    "Use Shadcn UI but heavily customize the borders and radii to match the 'card' guidelines above (rounded-2xl, soft borders)."
+  ]
+}
