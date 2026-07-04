@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
@@ -107,6 +108,7 @@ function App() {
         <AuthProvider>
           <AppRouter />
           <Toaster position="bottom-right" richColors closeButton />
+          <Analytics />
         </AuthProvider>
       </BrowserRouter>
     </div>
