@@ -1122,13 +1122,9 @@ async def help_search(payload: HelpSearchIn, user: dict = Depends(get_current_us
     sponsored_docs = await db.sponsored_listings.find({"category": payload.category, "active": True}, {"_id": 0}).to_list(50)
     sponsored = [_sponsored_to_result(s) for s in sponsored_docs if _match_location(s.get("location_keywords", []), location)]
     sponsored = sorted(sponsored, key=lambda x: x.get("priority", 0), reverse=True)[:3]
-    category_meta = next(c for c in HELP_CATEGORIES if c["key"] == payload.category)
-    if GOOGLE_PLACES_API_KEY:
-        organic = await _fetch_google_places(category_meta["query"], location)
-        live = True
-    else:
-        organic = _demo_results(payload.category, location)
-        live = False
+    from vendors_free import search_vendors_free
+    organic = await search_vendors_free(payload.category, location)
+    live = True
     return {"category": payload.category, "location": location, "live": live, "sponsored": sponsored, "organic": organic}
 
 
