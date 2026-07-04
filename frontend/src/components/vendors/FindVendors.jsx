@@ -322,9 +322,14 @@ export default function FindVendors({ weddingLocation = "" }) {
     setError(null);
     setResults(null);
     try {
-      const params = new URLSearchParams({ category: cat, location: loc.trim() });
-      const res = await fetch(`/api/vendors/search?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}` },
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const res = await fetch(`${backendUrl}/api/help/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("lumiere_token") || ""}`,
+        },
+        body: JSON.stringify({ category: cat, location: loc.trim() }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -438,32 +443,32 @@ export default function FindVendors({ weddingLocation = "" }) {
             <AffiliateBanner category={selectedCategory} location={location} />
 
             {/* ── AdSense slot 2 (after first few results) ── */}
-            {results.results.length > 3 && (
+            {results.organic.length > 3 && (
               <>
                 <div className="space-y-4">
-                  {results.results.slice(0, 3).map(v => (
+                  {results.organic.slice(0, 3).map(v => (
                     <VendorCard key={v.place_id} vendor={v} category={selectedCategory} location={location} />
                   ))}
                 </div>
                 <AdSenseUnit slot={ADSENSE_AD_SLOT_2} label="Advertisement" />
                 <div className="space-y-4">
-                  {results.results.slice(3).map(v => (
+                  {results.organic.slice(3).map(v => (
                     <VendorCard key={v.place_id} vendor={v} category={selectedCategory} location={location} />
                   ))}
                 </div>
               </>
             )}
 
-            {results.results.length <= 3 && (
+            {results.organic.length <= 3 && (
               <div className="space-y-4">
-                {results.results.map(v => (
+                {results.organic.map(v => (
                   <VendorCard key={v.place_id} vendor={v} category={selectedCategory} location={location} />
                 ))}
               </div>
             )}
 
             {/* No results */}
-            {results.results.length === 0 && (
+            {results.organic.length === 0 && (
               <div className="text-center py-12" data-testid="vendor-no-results">
                 <Search size={32} strokeWidth={1} style={{ color: "#EAE5DF", margin: "0 auto 16px" }} />
                 <p className="font-serif text-lg mb-2" style={{ fontFamily: "Playfair Display", color: "#2C2C2C" }}>
