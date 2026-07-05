@@ -352,7 +352,7 @@ class GoogleIdTokenIn(BaseModel):
 
 
 class DeleteAccountIn(BaseModel):
-    confirm: str   # Must equal user's email
+    confirmation: str   # Must equal "DELETE"
 
 
 # ------------------------------------------------------------------
@@ -684,8 +684,8 @@ async def logout(request: Request, response: Response):
 async def delete_account(payload: DeleteAccountIn, request: Request, response: Response,
                          user: dict = Depends(get_current_user)):
     """Permanently delete account. Requires typing email as confirmation."""
-    if payload.confirm.strip().lower() != user["email"].lower():
-        raise HTTPException(status_code=400, detail="Email confirmation does not match")
+    if payload.confirmation.strip() != "DELETE":
+        raise HTTPException(status_code=400, detail="Type DELETE (all caps) to confirm.")
     uid = user["user_id"]
     # Atomic-ish deletion across all collections
     await asyncio.gather(
@@ -1219,6 +1219,27 @@ async def get_stats(user: dict = Depends(get_current_user)):
             "guests": {"total": len(guests), "rsvp": rsvp_counts, "plus_ones": plus_ones,
                        "estimated_attending": rsvp_counts["attending"] + plus_ones}}
 
+
+
+
+@api.post("/help/search-all")
+@limiter.limit("10/minute")
+async def help_search_all(location: str, request: Request, user: dict = Depends(get_current_user)):
+    """
+    Search all categories at once in parallel — single API call instead of 11.
+    Returns top 3 results per category.
+    """
+    if not location or not location.strip():
+        raise HTTPException(status_code=400, detail="Location is required")
+    from vendors_free import search_vendors, CATEGORY_CONFIG
+    import asyncio as aio
+    cats = list(CATEGORY_CONFIG.keys())
+    tasks = [search_vendors(cat, location.strip(), radius_miles=25, limit=3) for cat in cats]
+    results = await aio.gather(*tasks, return_exceptions=True)
+    return {
+        cat: (res if not isinstance(res, Exception) else [])
+        for cat, res in zip(cats, results)
+    }
 
 # ------------------------------------------------------------------
 # App setup

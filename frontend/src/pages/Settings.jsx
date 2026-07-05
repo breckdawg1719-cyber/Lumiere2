@@ -45,7 +45,18 @@ function DeleteAccountModal({ isOpen, onClose }) {
     setLoading(true);
     setError(null);
     try {
-      await api.delete("/account/delete", { data: { confirmation: "DELETE" } });
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/account`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("lumiere_token") || ""}`,
+        },
+        body: JSON.stringify({ confirmation: "DELETE" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Deletion failed.");
+      }
       setDone(true);
       setTimeout(() => { window.location.href = "/"; }, 3000);
     } catch (e) {

@@ -11,6 +11,63 @@ import logging
 logger = logging.getLogger("wedding")
 YELP_API_KEY = os.environ.get("YELP_API_KEY", "").strip()
 
+
+# ── Curated fallback photos per category (Unsplash, free to use) ─────────────
+CATEGORY_PHOTOS = {
+    "catering": [
+        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop&q=80",
+    ],
+    "photographer": [
+        "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop&q=80",
+    ],
+    "venue": [
+        "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=300&fit=crop&q=80",
+    ],
+    "florist": [
+        "https://images.unsplash.com/photo-1487530811015-780f6d7fc72f?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop&q=80",
+    ],
+    "music": [
+        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop&q=80",
+    ],
+    "attire": [
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=400&h=300&fit=crop&q=80",
+    ],
+    "cake": [
+        "https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop&q=80",
+    ],
+    "transport": [
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?w=400&h=300&fit=crop&q=80",
+    ],
+    "hair_makeup": [
+        "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400&h=300&fit=crop&q=80",
+    ],
+    "officiant": [
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=300&fit=crop&q=80",
+    ],
+    "invitations": [
+        "https://images.unsplash.com/photo-1578574577315-3fbeb0cecdc2?w=400&h=300&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400&h=300&fit=crop&q=80",
+    ],
+}
+
+import random
+
+def get_fallback_photo(category: str, index: int = 0) -> str:
+    photos = CATEGORY_PHOTOS.get(category, [])
+    if not photos:
+        return None
+    return photos[index % len(photos)]
+
 # ── Category config ───────────────────────────────────────────────────────────
 CATEGORY_CONFIG = {
     "catering": {
@@ -280,13 +337,13 @@ DEMO_VENDORS = {
 
 def _make_demo(category: str, location: str) -> list:
     demos = [dict(d) for d in DEMO_VENDORS.get(category, [])]
-    for d in demos:
+    for i, d in enumerate(demos):
         d.update({
             "address": f"Near {location}",
             "distance": None,
             "phone": None,
             "website": None,
-            "image_url": None,
+            "image_url": get_fallback_photo(category, i),
             "categories": [],
             "is_closed": False,
             "sponsored": False,
@@ -297,7 +354,8 @@ def _make_demo(category: str, location: str) -> list:
 
 
 async def search_yelp(term: str, location: str, yelp_categories: str,
-                       radius_miles: int = 25, limit: int = 20) -> list:
+                       radius_miles: int = 25, limit: int = 20,
+                       category: str = "") -> list:
     """Search Yelp Fusion API."""
     if not YELP_API_KEY:
         return []
@@ -338,6 +396,7 @@ async def search_yelp(term: str, location: str, yelp_categories: str,
         dist_m = b.get("distance")
         distance_str = f"{dist_m / 1609.34:.1f} mi away" if dist_m else None
 
+        img = b.get("image_url") or get_fallback_photo(category, len(results))
         results.append({
             "name": b.get("name"),
             "address": address or None,
@@ -346,7 +405,7 @@ async def search_yelp(term: str, location: str, yelp_categories: str,
             "website": b.get("url"),
             "rating": b.get("rating"),
             "reviews": b.get("review_count"),
-            "image_url": b.get("image_url"),
+            "image_url": img,
             "price_level": b.get("price"),
             "categories": [c.get("title") for c in b.get("categories", [])],
             "is_closed": b.get("is_closed", False),
@@ -379,6 +438,7 @@ async def search_vendors(category: str, location: str,
             yelp_categories=config["yelp_categories"],
             radius_miles=radius_miles,
             limit=limit,
+            category=category,
         )
         if results:
             return results
