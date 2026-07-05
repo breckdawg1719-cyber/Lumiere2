@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 
 // ── AdSense ───────────────────────────────────────────────────────────────────
-const ADSENSE_PUBLISHER_ID = "ca-pub-1515317647829975";
-const ADSENSE_AD_SLOT_1    = "2699319094";
-const ADSENSE_AD_SLOT_2    = "3269752044";
+const ADSENSE_PUBLISHER_ID = "ca-pub-1357852677461391";
+const ADSENSE_AD_SLOT_1    = "4742755430"; // vendors-top
+const ADSENSE_AD_SLOT_2    = "3126421430"; // vendors-mid
+const ADSENSE_AD_SLOT_3    = "1813339760"; // vendors-bottom
 
 // ── Categories (planner removed) ─────────────────────────────────────────────
 const CATEGORIES = [
@@ -47,9 +48,9 @@ function AdSenseUnit({ slot }) {
       <p className="text-center text-xs py-1 uppercase tracking-[0.15em]" style={{ color: "#C0BAB4", borderBottom: "1px solid #EAE5DF" }}>
         Advertisement
       </p>
-      <ins ref={adRef} className="adsbygoogle" style={{ display: "block", minHeight: 90 }}
+      <ins ref={adRef} className="adsbygoogle" style={{ display: "block" }}
         data-ad-client={ADSENSE_PUBLISHER_ID} data-ad-slot={slot}
-        data-ad-format="fluid" data-ad-layout-key="-fb+5w+4e-db+86" />
+        data-ad-format="auto" data-full-width-responsive="true" />
     </div>
   );
 }
