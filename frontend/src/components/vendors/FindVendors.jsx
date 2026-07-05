@@ -40,15 +40,33 @@ const RADIUS_OPTIONS = [5, 10, 15, 25, 50];
 // ── AdSense unit ──────────────────────────────────────────────────────────────
 function AdSenseUnit({ slot }) {
   const adRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    try { if (window.adsbygoogle) window.adsbygoogle.push({}); } catch (e) {}
+    try {
+      if (window.adsbygoogle) {
+        window.adsbygoogle.push({});
+        // Mark as loaded after push so container can settle
+        setTimeout(() => setLoaded(true), 200);
+      }
+    } catch (e) {}
   }, []);
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #EAE5DF", background: "#FAFAFA" }}>
-      <p className="text-center text-xs py-1 uppercase tracking-[0.15em]" style={{ color: "#C0BAB4", borderBottom: "1px solid #EAE5DF" }}>
+    /* min-height reserves space BEFORE the ad loads — kills CLS */
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        border: "1px solid #EAE5DF",
+        background: "#FAFAFA",
+        minHeight: 120,           /* reserves space so nothing shifts */
+        contain: "layout",        /* isolates layout impact to this box */
+      }}
+    >
+      <p className="text-center text-xs py-1 uppercase tracking-[0.15em]"
+        style={{ color: "#C0BAB4", borderBottom: "1px solid #EAE5DF" }}>
         Advertisement
       </p>
-      <ins ref={adRef} className="adsbygoogle" style={{ display: "block" }}
+      <ins ref={adRef} className="adsbygoogle"
+        style={{ display: "block", minHeight: 90 }}
         data-ad-client={ADSENSE_PUBLISHER_ID} data-ad-slot={slot}
         data-ad-format="auto" data-full-width-responsive="true" />
     </div>
@@ -85,13 +103,18 @@ function VendorCard({ vendor, category }) {
       style={{ border: "1px solid #EAE5DF", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
       data-testid="vendor-card"
     >
-      {/* Photo */}
-      <div className="relative h-44 overflow-hidden" style={{ background: `${color}18` }}>
+      {/* Photo — fixed height with aspect-ratio prevents CLS */}
+      <div className="relative overflow-hidden"
+        style={{ background: `${color}18`, aspectRatio: "16/9", height: 176 }}>
         {vendor.image_url && !imgErr ? (
           <img
             src={vendor.image_url}
             alt={vendor.name}
+            width="400"
+            height="176"
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
             onError={() => setImgErr(true)}
           />
         ) : (
