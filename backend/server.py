@@ -1021,6 +1021,9 @@ ALLOWED_CATEGORY_KEYS = {c["key"] for c in HELP_CATEGORIES}
 class HelpSearchIn(BaseModel):
     category: str = Field(min_length=1, max_length=64)
     location: str = Field(min_length=1, max_length=200)
+    radius_miles: int = Field(default=25, ge=1, le=50)
+    online: bool = Field(default=False)
+    limit: int = Field(default=20, ge=1, le=50)
 
 
 class SponsoredListingIn(BaseModel):
@@ -1122,8 +1125,14 @@ async def help_search(payload: HelpSearchIn, user: dict = Depends(get_current_us
     sponsored_docs = await db.sponsored_listings.find({"category": payload.category, "active": True}, {"_id": 0}).to_list(50)
     sponsored = [_sponsored_to_result(s) for s in sponsored_docs if _match_location(s.get("location_keywords", []), location)]
     sponsored = sorted(sponsored, key=lambda x: x.get("priority", 0), reverse=True)[:3]
-    from vendors_free import search_vendors_free
-    organic = await search_vendors_free(payload.category, location)
+    from vendors_free import search_vendors
+    organic = await search_vendors(
+        category=payload.category,
+        location=location,
+        radius_miles=payload.radius_miles,
+        online=payload.online,
+        limit=payload.limit,
+    )
     live = True
     return {"category": payload.category, "location": location, "live": live, "sponsored": sponsored, "organic": organic}
 
