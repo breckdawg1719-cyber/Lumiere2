@@ -73,18 +73,40 @@ export default function Dashboard() {
     );
   }
 
-  const currency = stats.currency;
+  // Safe defaults — API may return partial data
+  const safeStats = {
+    currency: stats?.currency || "USD",
+    total_budget: stats?.total_budget || 0,
+    total_spent: stats?.total_spent || 0,
+    total_pending: stats?.total_pending || 0,
+    total_planned: stats?.total_planned || 0,
+    remaining: stats?.remaining || 0,
+    expense_count: stats?.expense_count || 0,
+    by_category: stats?.by_category || [],
+    guests: {
+      total: stats?.guests?.total || 0,
+      estimated_attending: stats?.guests?.estimated_attending || 0,
+      rsvp: {
+        attending: stats?.guests?.rsvp?.attending || 0,
+        pending: stats?.guests?.rsvp?.pending || 0,
+        declined: stats?.guests?.rsvp?.declined || 0,
+        maybe: stats?.guests?.rsvp?.maybe || 0,
+      },
+    },
+  };
+
+  const currency = safeStats.currency;
   const sym = getCurrencySymbol(currency);
   const spentPct =
-    stats.total_budget > 0
-      ? Math.min(100, ((stats.total_spent + stats.total_pending) / stats.total_budget) * 100)
+    safeStats.total_budget > 0
+      ? Math.min(100, ((safeStats.total_spent + safeStats.total_pending) / safeStats.total_budget) * 100)
       : 0;
 
-  const pieData = (stats.by_category || [])
+  const pieData = safeStats.by_category
     .filter((c) => c.spent + c.pending > 0)
     .map((c) => ({ name: c.name, value: c.spent + c.pending, color: c.color }));
 
-  const barData = (stats.by_category || [])
+  const barData = safeStats.by_category
     .filter((c) => c.planned > 0 || c.spent > 0 || c.pending > 0)
     .slice(0, 8)
     .map((c) => ({
@@ -145,25 +167,25 @@ export default function Dashboard() {
         <StatCard
           testId="stat-total-budget"
           label="Total Budget"
-          value={stats.total_budget}
+          value={safeStats.total_budget}
           prefix={sym}
-          sublabel={`Planned: ${formatMoney(stats.total_planned, currency)}`}
+          sublabel={`Planned: ${formatMoney(safeStats.total_planned, currency)}`}
           icon={Wallet}
           color="#C5A880"
         />
         <StatCard
           testId="stat-spent"
           label="Paid"
-          value={stats.total_spent}
+          value={safeStats.total_spent}
           prefix={sym}
-          sublabel={`${stats.expense_count} expense${stats.expense_count === 1 ? "" : "s"}`}
+          sublabel={`${safeStats.expense_count} expense${safeStats.expense_count === 1 ? "" : "s"}`}
           icon={CheckCircle2}
           color="#9CB4A6"
         />
         <StatCard
           testId="stat-pending"
           label="Pending"
-          value={stats.total_pending}
+          value={safeStats.total_pending}
           prefix={sym}
           sublabel="Outstanding amounts"
           icon={Clock}
@@ -172,11 +194,11 @@ export default function Dashboard() {
         <StatCard
           testId="stat-remaining"
           label="Remaining"
-          value={stats.remaining}
+          value={safeStats.remaining}
           prefix={sym}
-          sublabel={stats.remaining < 0 ? "Over budget" : "Still available"}
+          sublabel={safeStats.remaining < 0 ? "Over budget" : "Still available"}
           icon={TrendingDown}
-          color={stats.remaining < 0 ? "#D48A8A" : "#C5A880"}
+          color={safeStats.remaining < 0 ? "#D48A8A" : "#C5A880"}
         />
       </div>
 
@@ -192,8 +214,8 @@ export default function Dashboard() {
               {spentPct.toFixed(0)}% allocated
             </div>
             <div className="font-serif text-2xl text-[#2C2C2C]">
-              {formatMoney(stats.total_spent + stats.total_pending, currency)} /{" "}
-              <span className="text-[#76726B]">{formatMoney(stats.total_budget, currency)}</span>
+              {formatMoney(safeStats.total_spent + safeStats.total_pending, currency)} /{" "}
+              <span className="text-[#76726B]">{formatMoney(safeStats.total_budget, currency)}</span>
             </div>
           </div>
         </div>
@@ -292,9 +314,9 @@ export default function Dashboard() {
             <span className="label-overline">Guests</span>
             <Users className="h-4 w-4 text-[#C5A880]" strokeWidth={1.5} />
           </div>
-          <div className="font-serif text-3xl mt-3"><CountUp value={stats.guests.total} /></div>
+          <div className="font-serif text-3xl mt-3"><CountUp value={safeStats.guests.total} /></div>
           <div className="text-xs text-[#76726B] mt-1">
-            {stats.guests.estimated_attending} expected to attend
+            {safeStats.guests.estimated_attending} expected to attend
           </div>
         </div>
         {[
@@ -307,7 +329,7 @@ export default function Dashboard() {
               {b.label}
             </span>
             <div className="font-serif text-3xl mt-3">
-              <CountUp value={stats.guests.rsvp[b.key]} />
+              <CountUp value={safeStats.guests.rsvp[b.key]} />
             </div>
             <div className="text-xs text-[#76726B] mt-1">RSVPs marked {b.label.toLowerCase()}</div>
           </div>
