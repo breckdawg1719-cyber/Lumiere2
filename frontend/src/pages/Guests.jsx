@@ -230,7 +230,7 @@ export default function Guests() {
 
   const reload = async () => {
     const { data } = await api.get("/guests");
-    setItems(data);
+    setItems(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {

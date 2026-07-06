@@ -183,7 +183,7 @@ export default function Vendors() {
 
   const reload = async () => {
     const { data } = await api.get("/vendors");
-    setItems(data);
+    setItems(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => { reload(); }, []);

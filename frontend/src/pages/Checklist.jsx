@@ -134,7 +134,7 @@ export default function Checklist() {
 
   const reload = async () => {
     const { data } = await api.get("/tasks");
-    setItems(data);
+    setItems(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {

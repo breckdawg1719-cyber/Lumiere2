@@ -212,9 +212,9 @@ export default function Expenses() {
       api.get("/categories"),
       api.get("/profile"),
     ]);
-    setItems(e.data);
-    setCategories(c.data);
-    setProfile(p.data);
+    setItems(Array.isArray(e.data) ? e.data : []);
+    setCategories(Array.isArray(c.data) ? c.data : []);
+    setProfile(p.data || null);
   };
 
   useEffect(() => {

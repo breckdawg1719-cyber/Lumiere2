@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2C2420"/>
+      <stop offset="100%" stop-color="#1A1512"/>
+    </radialGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Decorative thin ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#C5A880" stroke-width="1" opacity="0.3"/>
+  <!-- Letter L in Playfair style -->
+  <text
+    x="256"
+    y="330"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="260"
+    font-weight="400"
+    text-anchor="middle"
+    fill="#C5A880"
+    letter-spacing="-8"
+  >L</text>
+  <!-- Thin gold underline accent -->
+  <line x1="160" y1="370" x2="352" y2="370" stroke="#C5A880" stroke-width="1.5" opacity="0.6"/>
+</svg>

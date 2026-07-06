@@ -133,7 +133,7 @@ export default function Categories() {
       api.get("/stats"),
       api.get("/profile"),
     ]);
-    setItems(c.data);
+    setItems(Array.isArray(c.data) ? c.data : []);
     setStats(s.data);
     setProfile(p.data);
   };
