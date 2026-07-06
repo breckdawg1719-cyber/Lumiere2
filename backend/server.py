@@ -41,6 +41,7 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
 GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY", "").strip()
 ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "").strip()
+MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 
 SESSION_TTL_DAYS = 7
 SESSION_COOKIE_NAME = "session_token"
@@ -1244,6 +1245,19 @@ async def help_search_all(location: str, request: Request, user: dict = Depends(
 # ------------------------------------------------------------------
 # App setup
 # ------------------------------------------------------------------
+
+
+@app.get("/api/status")
+async def status_check():
+    """
+    Public status endpoint — no auth required.
+    UptimeRobot / frontend checks this to detect maintenance mode.
+    """
+    return {
+        "status": "maintenance" if MAINTENANCE_MODE else "ok",
+        "maintenance": MAINTENANCE_MODE,
+    }
+
 app.include_router(api)
 
 # CORS — locked to your frontend URL only

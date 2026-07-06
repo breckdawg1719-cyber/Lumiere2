@@ -1,9 +1,11 @@
 import "@/App.css";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import Maintenance from "@/pages/Maintenance";
 
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
@@ -103,6 +105,25 @@ function AppRouter() {
 }
 
 function App() {
+  const [maintenance, setMaintenance] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
+    fetch(`${backendUrl}/api/status`)
+      .then((res) => res.json())
+      .then((data) => setMaintenance(!!data.maintenance))
+      .catch(() => setMaintenance(false)) // if status check fails, don't block the app
+      .finally(() => setChecked(true));
+  }, []);
+
+  // Show nothing until we've checked — avoids a flash of the app before redirecting
+  if (!checked) return null;
+
+  if (maintenance) {
+    return <Maintenance />;
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
