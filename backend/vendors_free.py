@@ -75,7 +75,7 @@ CATEGORY_CONFIG = {
         "yelp_categories": "caterers",
     },
     "photographer": {
-        "term": "wedding photographer",
+        "term": "wedding photography",
         "yelp_categories": "photographers",
     },
     "venue": {
@@ -107,8 +107,8 @@ CATEGORY_CONFIG = {
         "yelp_categories": "hair,makeupartists,beautysvc",
     },
     "officiant": {
-        "term": "wedding officiant ceremony",
-        "yelp_categories": "ceremonialservices",
+        "term": "wedding officiant",
+        "yelp_categories": "officiants",
     },
     "invitations": {
         "term": "wedding invitations stationery custom printing",
@@ -366,11 +366,12 @@ async def search_yelp(term: str, location: str, yelp_categories: str,
     params = {
         "term": term,
         "location": location,
-        "categories": yelp_categories,
         "radius": radius_meters,
         "limit": min(limit, 50),
         "sort_by": "rating",
     }
+    if yelp_categories:
+        params["categories"] = yelp_categories
 
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -430,7 +431,7 @@ async def search_vendors(category: str, location: str,
     if not config:
         return []
 
-    # Try Yelp first
+    # Try Yelp first — strict category + term
     if YELP_API_KEY:
         results = await search_yelp(
             term=config["term"],
@@ -442,6 +443,34 @@ async def search_vendors(category: str, location: str,
         )
         if results:
             return results
-        logger.info("Yelp returned no results for %s in %s, using demo", category, location)
+
+        # Fallback 1: retry with term only, no category restriction
+        # (category filters can zero out results in smaller cities)
+        logger.info("No strict results for %s in %s, retrying without category filter", category, location)
+        results = await search_yelp(
+            term=config["term"],
+            location=location,
+            yelp_categories="",
+            radius_miles=radius_miles,
+            limit=limit,
+            category=category,
+        )
+        if results:
+            return results
+
+        # Fallback 2: widen radius to max and retry
+        logger.info("Still no results for %s in %s, widening radius", category, location)
+        results = await search_yelp(
+            term=config["term"],
+            location=location,
+            yelp_categories="",
+            radius_miles=50,
+            limit=limit,
+            category=category,
+        )
+        if results:
+            return results
+
+        logger.info("Yelp returned no results for %s in %s after all fallbacks, using demo", category, location)
 
     return _make_demo(category, location)
